@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "45343121134",
+    "firebase_url": "https://social-fei-mobv.firebaseio.com",
+    "project_id": "social-fei-mobv",
+    "storage_bucket": "social-fei-mobv.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:45343121134:android:776dabf3584635b9",
+        "android_client_info": {
+          "package_name": "mobv.fei.stu.sk.mobv"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "45343121134-6ie3l9d70j78r01fk078p889fhnd7deu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "mobv.fei.stu.sk.mobv",
+            "certificate_hash": "524f9f869b1cb789a06ce6443823be0ddcc8906c"
+          }
+        },
+        {
+          "client_id": "45343121134-5ikbib0a6nqbalol9tg5jglnpnd4uum7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCIAgbjCe1sWsa9_PD-4RJd6cQTseFaYEM"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "45343121134-5ikbib0a6nqbalol9tg5jglnpnd4uum7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
