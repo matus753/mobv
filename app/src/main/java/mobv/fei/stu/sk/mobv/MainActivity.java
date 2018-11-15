@@ -1,10 +1,16 @@
 package mobv.fei.stu.sk.mobv;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
@@ -27,6 +33,8 @@ import java.util.Map;
 public class MainActivity extends AppCompatActivity {
 
     private static final int RC_SIGN_IN = 69;
+    private static final int RC_SELECT_PICTURE = 1;
+
     private static final String TAG = "MAIN";
 
     private FirebaseAuth mAuth;
@@ -53,6 +61,18 @@ public class MainActivity extends AppCompatActivity {
                 .setPersistenceEnabled(true)
                 .build();
         db.setFirestoreSettings(settings);
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "*/*");
+                String[] mimetypes = {"image/*", "video/*"};
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, mimetypes);
+                startActivityForResult(Intent.createChooser(intent, "Select Picture or Video"), RC_SELECT_PICTURE);
+            }
+        });
     }
 
     @Override
@@ -110,6 +130,34 @@ public class MainActivity extends AppCompatActivity {
                 // sign-in flow using the back button. Otherwise check
                 // response.getError().getErrorCode() and handle the error.
                 // ...
+            }
+        }
+
+        if (requestCode == RC_SELECT_PICTURE) {
+            if(data != null) {
+                Uri selectedMediaUri = data.getData();
+                if(selectedMediaUri != null) {
+                    //error
+                    Uri selectedUri = data.getData();
+                    String[] columns = {MediaStore.Images.Media.DATA,
+                            MediaStore.Images.Media.MIME_TYPE};
+
+                    Cursor cursor = getContentResolver().query(selectedUri, columns, null, null, null);
+                    cursor.moveToFirst();
+
+                    int mimeTypeColumnIndex = cursor.getColumnIndex(columns[1]);
+
+                    String mimeType = cursor.getString(mimeTypeColumnIndex);
+                    cursor.close();
+
+                    if (mimeType.startsWith("image")) {
+                        //It's an image
+                        Log.i(TAG, "Image path:" + selectedMediaUri.getPath());
+                    } else if (mimeType.startsWith("video")) {
+                        //It's a video
+                        Log.i(TAG, "Video path:" + selectedMediaUri.getPath());
+                    }
+                }
             }
         }
     }
