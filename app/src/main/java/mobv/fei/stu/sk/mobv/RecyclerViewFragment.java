@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +23,9 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.List;
 
+import mobv.fei.stu.sk.mobv.model.Post;
+import mobv.fei.stu.sk.mobv.model.Profile;
+
 public class RecyclerViewFragment extends Fragment {
 
     private static final String TAG = "RecyclerViewFragment";
@@ -30,7 +34,7 @@ public class RecyclerViewFragment extends Fragment {
     protected RecyclerView mRecyclerView;
     protected CustomAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
-    protected List<String> mDataset = new ArrayList<>();
+    protected List<Object> mDataset = new ArrayList<>();
 
     private FirebaseFirestore db;
 
@@ -55,7 +59,6 @@ public class RecyclerViewFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.recycler_view_frag, container, false);
         rootView.setTag(TAG);
 
-
         initDataset(rootView);
 
         return rootView;
@@ -70,34 +73,50 @@ public class RecyclerViewFragment extends Fragment {
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         if(user != null) {
-            db.collection("posts").whereEqualTo("userid", user.getUid())
+            db.collection("users").document(user.getUid())
                 .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                .addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                       if(task.getResult() != null) {
-                           for(DocumentSnapshot document: task.getResult().getDocuments()){
-                               mDataset.add(document.getString("url"));
-                           }
-                       }
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot document = task.getResult();
+                            Log.d(TAG, document.getId() + " => " + document.getData());
+                            Profile profile = document.toObject(Profile.class);
+                            mDataset.add(profile);
 
-                        mRecyclerView = rootView.findViewById(R.id.recyclerView);
+                            db.collection("posts").whereEqualTo("userid", user.getUid())
+                                .get()
+                                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                                        if(task.getResult() != null) {
+                                            for(DocumentSnapshot document: task.getResult().getDocuments()){
+                                                mDataset.add(document.toObject(Post.class));
+                                            }
+                                        }
 
-                        mAdapter = new CustomAdapter(mDataset);
-                        // Set CustomAdapter as the adapter for RecyclerView.
-                        mRecyclerView.setAdapter(mAdapter);
+                                        mRecyclerView = rootView.findViewById(R.id.recyclerView);
 
-                        // LinearLayoutManager is used here, this will layout the elements in a similar fashion
-                        // to the way ListView would layout elements. The RecyclerView.LayoutManager defines how
-                        // elements are laid out.
-                        mLayoutManager = new LinearLayoutManager(getActivity());
-                        mRecyclerView.setLayoutManager(mLayoutManager);
+                                        mAdapter = new CustomAdapter(mDataset);
+                                        // Set CustomAdapter as the adapter for RecyclerView.
+                                        mRecyclerView.setAdapter(mAdapter);
 
-                        PagerSnapHelper snapHelper = new PagerSnapHelper();
-                        snapHelper.attachToRecyclerView(mRecyclerView);
+                                        // LinearLayoutManager is used here, this will layout the elements in a similar fashion
+                                        // to the way ListView would layout elements. The RecyclerView.LayoutManager defines how
+                                        // elements are laid out.
+                                        mLayoutManager = new LinearLayoutManager(getActivity());
+                                        mRecyclerView.setLayoutManager(mLayoutManager);
 
+                                        PagerSnapHelper snapHelper = new PagerSnapHelper();
+                                        snapHelper.attachToRecyclerView(mRecyclerView);
+
+                                        mLayoutManager.scrollToPosition(1);
+                                    }
+                                });
+                        }
                     }
                 });
+
         }
     }
 }
