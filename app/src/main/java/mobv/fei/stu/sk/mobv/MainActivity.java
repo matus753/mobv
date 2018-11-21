@@ -8,6 +8,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -119,6 +120,11 @@ public class MainActivity extends AppCompatActivity {
                                                     }
                                                 });
                                     }
+
+                                    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+                                    RecyclerViewFragment fragment = new RecyclerViewFragment();
+                                    transaction.replace(R.id.sample_content_fragment, fragment);
+                                    transaction.commit();
                                 } else {
                                     Log.w(TAG, "Error getting documents.", task.getException());
                                 }
