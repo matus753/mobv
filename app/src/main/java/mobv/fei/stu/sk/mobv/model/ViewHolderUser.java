@@ -1,11 +1,8 @@
 package mobv.fei.stu.sk.mobv.model;
 
-import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.TextView;
 
 import mobv.fei.stu.sk.mobv.R;
 
@@ -17,6 +14,8 @@ public class ViewHolderUser extends RecyclerView.ViewHolder {
     private static final String TAG = "ViewHolderUser";
 
     private final RecyclerView recyclerView;
+
+    private Boolean creating = true;
 
     public ViewHolderUser(View v) {
         super(v);
@@ -33,5 +32,13 @@ public class ViewHolderUser extends RecyclerView.ViewHolder {
 
     public RecyclerView getRecyclerView() {
         return recyclerView;
+    }
+
+    public Boolean getCreating() {
+        return creating;
+    }
+
+    public void setCreating(Boolean creating) {
+        this.creating = creating;
     }
 }

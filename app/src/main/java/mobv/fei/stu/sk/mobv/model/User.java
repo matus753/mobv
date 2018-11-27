@@ -1,5 +1,6 @@
 package mobv.fei.stu.sk.mobv.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -13,7 +14,7 @@ public class User {
 
     private Date date;
 
-    private List<Post> posts;
+    private List<Object> posts;
 
     public String getId() {
         return id;
@@ -47,11 +48,11 @@ public class User {
         this.date = date;
     }
 
-    public List<Post> getPosts() {
+    public List<Object> getPosts() {
         return posts;
     }
 
-    public void setPosts(List<Post> posts) {
+    public void setPosts(List<Object> posts) {
         this.posts = posts;
     }
 }

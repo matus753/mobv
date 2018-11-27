@@ -7,6 +7,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SnapHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,16 +28,17 @@ import java.util.List;
 
 import mobv.fei.stu.sk.mobv.model.Post;
 import mobv.fei.stu.sk.mobv.model.User;
+import mobv.fei.stu.sk.mobv.model.ViewHolderUser;
 
 public class UsersRecyclerViewFragment extends Fragment {
 
     private static final String TAG = "UsersRecyclerView";
-    private static final int DATASET_COUNT = 60;
 
     protected RecyclerView mRecyclerView;
     protected UsersAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
     protected List<User> users = new ArrayList<>();
+    protected int currentUserPosition = 0;
 
     private FirebaseFirestore db;
 
@@ -84,7 +86,6 @@ public class UsersRecyclerViewFragment extends Fragment {
                         Log.d(TAG, "onSuccess: LIST EMPTY");
                     } else {
                         int position = 0;
-                        int currentUserPosition = 0;
                         for (DocumentSnapshot document: documentSnapshots.getDocuments()){
                             User user = document.toObject(User.class);
                             if(user != null) {
@@ -112,12 +113,29 @@ public class UsersRecyclerViewFragment extends Fragment {
                         PagerSnapHelper snapHelper = new PagerSnapHelper();
                         snapHelper.attachToRecyclerView(mRecyclerView);
 
-                        mLayoutManager.scrollToPosition(currentUserPosition);
+                        mRecyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
+                            @Override
+                            public void onChildViewAttachedToWindow(View view) {
+                                RecyclerView recyclerView = view.findViewById(R.id.posts_recycler_view);
+                                recyclerView.scrollToPosition(1);
+                            }
 
+                            @Override
+                            public void onChildViewDetachedFromWindow(View view) {
+
+                            }
+                        });
+
+                        mLayoutManager.scrollToPosition(currentUserPosition);
                         }
                     }
                 });
 
         }
+    }
+
+    public void newPost(Post post){
+        users.get(currentUserPosition).getPosts().add(1, post);
+        mAdapter.notifyItemChanged(currentUserPosition);
     }
 }
