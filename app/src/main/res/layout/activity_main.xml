@@ -35,4 +35,25 @@
         app:elevation="6dp"
         app:pressedTranslationZ="6dp" />
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"/>
+
+    <!--    <ImageButton
+            android:id="@+id/logout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/fui_transparent"
+            android:layout_margin="16dp"
+            app:srcCompat="@drawable/ic_logout"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:elevation="6dp"/>
+        &lt;!&ndash;app:pressedTranslationZ="6dp"&ndash;&gt;-->
 </android.support.constraint.ConstraintLayout>
