@@ -3,4 +3,6 @@
 
     <string name="element_text">Element</string>
     <string name="image">image</string>
+    <string name="countName">POČET PRÍSPEVKOV</string>
+    <string name="dateTimeName">DÁTUM A ČAS REGISTRÁCIE</string>
 </resources>

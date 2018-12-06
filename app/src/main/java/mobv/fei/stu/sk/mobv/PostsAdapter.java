@@ -24,8 +24,8 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
     private List<Object> mDataSet;
 
-    private static final String COUNT_OF_POSTS = "Počet príspevkov: ";
-    private static final String TIME_OF_REGISTRATION = "Čas registrácie: ";
+    private static final String COUNT_OF_POSTS = "POČET PRÍSPEVKOV";
+    private static final String TIME_OF_REGISTRATION = "DÁTUM A ČAS REGISTRÁCIE";
 
     @Override
     public int getItemViewType(int position) {
@@ -65,8 +65,8 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
                 ViewHolderProfile holderProfile = (ViewHolderProfile) viewHolder;
 
                 holderProfile.getName().setText(user.getUsername());
-                holderProfile.getCount().setText(COUNT_OF_POSTS.concat(user.getNumberOfPosts().toString()));
-                holderProfile.getRegistrationDate().setText(TIME_OF_REGISTRATION.concat(fomratter.format(user.getDate())));
+                holderProfile.getCount().setText(user.getNumberOfPosts().toString());
+                holderProfile.getRegistrationDate().setText(fomratter.format(user.getDate()));
                 break;
 
             }
