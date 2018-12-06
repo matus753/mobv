@@ -1,6 +1,5 @@
 package mobv.fei.stu.sk.mobv;
 
-import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,7 +9,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
+import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -19,7 +20,9 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import mobv.fei.stu.sk.mobv.model.Post;
 import mobv.fei.stu.sk.mobv.model.User;
@@ -31,28 +34,25 @@ import mobv.fei.stu.sk.mobv.model.ViewHolderUser;
 public class UsersAdapter extends RecyclerView.Adapter<ViewHolderUser> {
     private static final String TAG = "UsersAdapter";
 
-    private List<User> users;
+    private List<Post> posts;
 
-
-    protected RecyclerView mRecyclerView;
-    protected PostsAdapter mAdapter;
-    protected RecyclerView.LayoutManager mLayoutManager;
-
-    private FirebaseFirestore db;
+    private RecyclerView mRecyclerView;
+    private PostsAdapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
+    private SimpleExoPlayer exoPlayer;
 
     private final FragmentActivity activity;
-
-    private boolean creating = true;
+    private FirebaseFirestore db;
+    private boolean done;
 
     /**
      * Initialize the dataset of the Adapter.
      */
-    public UsersAdapter(List<User> dataSet, FragmentActivity activity) {
-        users = dataSet;
+    public UsersAdapter(List<Post> dataSet, FragmentActivity activity, SimpleExoPlayer exoPlayer) {
+        posts = dataSet;
         this.activity = activity;
+        this.exoPlayer = exoPlayer;
 
-        // Initialize dataset, this data would usually come from a local content provider or
-        // remote server.
         db = FirebaseFirestore.getInstance();
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
                 .setPersistenceEnabled(true)
@@ -68,56 +68,65 @@ public class UsersAdapter extends RecyclerView.Adapter<ViewHolderUser> {
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolderUser viewHolder, final int position) {
+        final Post post = posts.get(position);
+        mRecyclerView = viewHolder.getRecyclerView();
+
         if(viewHolder.getCreating()) {
-            Log.d(TAG, "Element " + position + " set.");
+            try {
+                PagerSnapHelper snapHelper = new PagerSnapHelper();
+                snapHelper.attachToRecyclerView(mRecyclerView);
+            } catch (IllegalStateException e){
+                e.printStackTrace();
+            }
+        }else {
+            viewHolder.setCreating(false);
+        }
 
-            final User user = users.get(position);
-            user.setPosts(new ArrayList<>());
-            db.collection("posts").whereEqualTo("userid", user.getId()).orderBy("date", Query.Direction.DESCENDING)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            user.getPosts().add(user);
 
-                            if (task.getResult() != null) {
-                                if (task.getResult().getDocuments().size() > 0) {
-                                    for (DocumentSnapshot document : task.getResult().getDocuments()) {
-                                        user.getPosts().add(document.toObject(Post.class));
+        db.collection("users").document(post.getUserid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+             @Override
+             public void onSuccess(final DocumentSnapshot documentSnapshot) {
+                 db.collection("posts").whereEqualTo("userid", post.getUserid()).orderBy("date", Query.Direction.DESCENDING)
+                    .get()
+                    .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                            if (task.isSuccessful()) {
+                                List<Object> adapterData = new ArrayList<>();
+                                adapterData.add(documentSnapshot.toObject(User.class).withId(documentSnapshot.getId()));
+
+
+                                int scrollTo = 0, position = 0;
+                                if (task.getResult() != null) {
+                                    if (task.getResult().getDocuments().size() > 0) {
+                                        for (DocumentSnapshot document : task.getResult().getDocuments()) {
+                                            if(document.getId().equals(post.getId())){
+                                                scrollTo = position;
+                                            }
+                                            adapterData.add(document.toObject(Post.class));
+                                            position++;
+                                        }
                                     }
                                 }
+
+
+                                mAdapter = new PostsAdapter(adapterData, exoPlayer, activity);
+                                mRecyclerView.setAdapter(mAdapter);
+                                mLayoutManager = new LinearLayoutManager(activity);
+                                mRecyclerView.setLayoutManager(mLayoutManager);
+
+                                mRecyclerView.scrollToPosition(scrollTo + 1);
                             }
-
-                            mRecyclerView = viewHolder.getRecyclerView();
-
-                            mAdapter = new PostsAdapter(user.getPosts());
-                            // Set PostsAdapter as the adapter for RecyclerView.
-                            mRecyclerView.setAdapter(mAdapter);
-
-                            // LinearLayoutManager is used here, this will layout the elements in a similar fashion
-                            // to the way ListView would layout elements. The RecyclerView.LayoutManager defines how
-                            // elements are laid out.
-                            mLayoutManager = new LinearLayoutManager(activity);
-                            mRecyclerView.setLayoutManager(mLayoutManager);
-
-                            PagerSnapHelper snapHelper = new PagerSnapHelper();
-                            snapHelper.attachToRecyclerView(mRecyclerView);
-
-                            mLayoutManager.scrollToPosition(1);
                         }
-                    }
-                });
-            viewHolder.setCreating(false);
-        } else {
-            mAdapter.notifyDataSetChanged();
-            mLayoutManager.scrollToPosition(1);
-        }
+                    });
+
+                 }
+             });
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return users.size();
+        return posts.size();
     }
 }

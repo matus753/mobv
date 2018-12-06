@@ -24,7 +24,14 @@
         android:layout_height="match_parent"
         android:adjustViewBounds="true"
         android:scaleType="centerCrop"
-        android:contentDescription="@string/image" />
+        android:contentDescription="@string/image"
+        android:visibility="gone"/>
+
+    <com.google.android.exoplayer2.ui.PlayerView
+        android:id="@+id/playerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
@@ -41,7 +48,9 @@
             android:layout_marginBottom="@dimen/margin_tiny"
             android:textSize="20dp"
             android:textAllCaps="true"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="@color/colorWhite"
+            android:shadowColor="@color/colorPrimary" />
 
         <TextView
             android:id="@+id/date"
