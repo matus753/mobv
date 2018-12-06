@@ -25,6 +25,8 @@ import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import mobv.fei.stu.sk.mobv.model.Post;
@@ -52,8 +54,8 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     /**
      * Initialize the dataset of the Adapter.
      */
-    public PostsAdapter(SimpleExoPlayer exoPlayer, Context context) {
-        data = new ArrayList<>();
+    public PostsAdapter(List<Object> data, SimpleExoPlayer exoPlayer, Context context) {
+        this.data = data;
         this.exoPlayer = exoPlayer;
         this.context = context;
     }
@@ -76,54 +78,59 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, final int position) {
         SimpleDateFormat fomratter = new SimpleDateFormat("dd. MM. yyyy HH:mm:ss");
-
         switch (viewHolder.getItemViewType()) {
             case 0: {
                 User user = (User) data.get(position);
                 ViewHolderProfile holderProfile = (ViewHolderProfile) viewHolder;
 
+                if(user != null) {
                     holderProfile.getName().setText(user.getUsername());
                     holderProfile.getCount().setText(COUNT_OF_POSTS.concat(user.getNumberOfPosts().toString()));
                     holderProfile.getRegistrationDate().setText(TIME_OF_REGISTRATION.concat(fomratter.format(user.getDate())));
-                    break;
-
                 }
-                case 1: {
-                    Post post = (Post)data.get(position);
-                    ViewHolderItem item = (ViewHolderItem) viewHolder;
-                    item.getName().setText(post.getUsername());
-                    item.getDate().setText(fomratter.format(post.getDate()));
-
-                    if("image".equals(post.getType())){
-                        ((ViewHolderItem) viewHolder).getImageView().setVisibility(View.VISIBLE);
-                        ((ViewHolderItem) viewHolder).getPlayerView().setVisibility(View.GONE);
-                        Picasso.get()
-                                .load(post.getUrl())
-                                .placeholder(R.drawable.ic_launcher_background)
-                                .error(R.drawable.ic_error_black_24dp)
-                                // To fit image into imageView
-                                .fit()
-                                // To prevent fade animation
-                                .noFade()
-                                .into(item.getImageView());
-                    } else {
-                        ((ViewHolderItem) viewHolder).getImageView().setVisibility(View.GONE);
-                        ((ViewHolderItem) viewHolder).getPlayerView().setVisibility(View.VISIBLE);
-
-                        item.getPlayerView().setPlayer(exoPlayer);
-                        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(context,
-                                Util.getUserAgent(context, "social-mobv"));
-                        MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
-                                .createMediaSource(Uri.parse(post.getUrl()));
-                        exoPlayer.prepare(videoSource);
-                        exoPlayer.setRepeatMode(Player.REPEAT_MODE_ONE);
-                        exoPlayer.setPlayWhenReady(true);
-
-                    }
+                break;
 
             }
+            case 1: {
+                Post post = (Post) data.get(position);
+                ViewHolderItem item = (ViewHolderItem) viewHolder;
+                handlePost(post, item, fomratter);
+                break;
+                }
         }
     }
+
+    private void handlePost(Post post, ViewHolderItem item,SimpleDateFormat fomratter) {
+        item.getName().setText(post.getUsername());
+        item.getDate().setText(fomratter.format(post.getDate()));
+
+        if ("image".equals(post.getType())) {
+            item.getImageView().setVisibility(View.VISIBLE);
+            item.getPlayerView().setVisibility(View.GONE);
+            Picasso.get()
+                    .load(post.getUrl())
+                    .placeholder(R.drawable.ic_launcher_background)
+                    .error(R.drawable.ic_error_black_24dp)
+                    // To fit image into imageView
+                    .fit()
+                    // To prevent fade animation
+                    .noFade()
+                    .into(item.getImageView());
+        } else {
+            item.getImageView().setVisibility(View.GONE);
+            item.getPlayerView().setVisibility(View.VISIBLE);
+
+            item.getPlayerView().setPlayer(exoPlayer);
+            DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(context,
+                    Util.getUserAgent(context, "social-mobv"));
+            MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                    .createMediaSource(Uri.parse(post.getUrl()));
+            exoPlayer.prepare(videoSource);
+            exoPlayer.setRepeatMode(Player.REPEAT_MODE_ONE);
+            exoPlayer.setPlayWhenReady(true);
+        }
+    }
+
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
