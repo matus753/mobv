@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.ui.PlayerView;
+
 import mobv.fei.stu.sk.mobv.R;
 
 /**
@@ -18,6 +20,7 @@ public class ViewHolderItem extends RecyclerView.ViewHolder {
     private final TextView name;
     private final TextView date;
     private final ImageView imageView;
+    private final PlayerView playerView;
 
     public ViewHolderItem(View v) {
         super(v);
@@ -31,6 +34,7 @@ public class ViewHolderItem extends RecyclerView.ViewHolder {
         imageView = v.findViewById(R.id.imageView);
         name = v.findViewById(R.id.name);
         date = v.findViewById(R.id.date);
+        playerView = v.findViewById(R.id.playerView);
     }
 
     public ImageView getImageView() {
@@ -43,5 +47,9 @@ public class ViewHolderItem extends RecyclerView.ViewHolder {
 
     public TextView getDate() {
         return date;
+    }
+
+    public PlayerView getPlayerView() {
+        return playerView;
     }
 }

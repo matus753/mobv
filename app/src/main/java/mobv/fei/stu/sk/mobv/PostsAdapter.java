@@ -1,14 +1,30 @@
 package mobv.fei.stu.sk.mobv;
 
+import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 import mobv.fei.stu.sk.mobv.model.Post;
@@ -22,7 +38,9 @@ import mobv.fei.stu.sk.mobv.model.ViewHolderProfile;
 public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private static final String TAG = "PostsAdapter";
 
-    private List<Object> mDataSet;
+    private List<Object> data;
+    private SimpleExoPlayer exoPlayer;
+    private Context context;
 
     private static final String COUNT_OF_POSTS = "Počet príspevkov: ";
     private static final String TIME_OF_REGISTRATION = "Čas registrácie: ";
@@ -34,8 +52,10 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     /**
      * Initialize the dataset of the Adapter.
      */
-    public PostsAdapter(List<Object> dataSet) {
-        mDataSet = dataSet;
+    public PostsAdapter(SimpleExoPlayer exoPlayer, Context context) {
+        data = new ArrayList<>();
+        this.exoPlayer = exoPlayer;
+        this.context = context;
     }
 
 
@@ -48,43 +68,59 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 
             case 1: return new ViewHolderItem(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.row_item, viewGroup, false));
 
-            default: return new ViewHolderProfile(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.profile, viewGroup, false)); //TODO: error page
+            default: return new ViewHolderItem(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.row_item, viewGroup, false)); //TODO: error page
         }
 
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, final int position) {
-        Log.d(TAG, "Element " + position + " set.");
-
         SimpleDateFormat fomratter = new SimpleDateFormat("dd. MM. yyyy HH:mm:ss");
 
         switch (viewHolder.getItemViewType()) {
             case 0: {
-                User user = (User) mDataSet.get(position);
+                User user = (User) data.get(position);
                 ViewHolderProfile holderProfile = (ViewHolderProfile) viewHolder;
 
-                holderProfile.getName().setText(user.getUsername());
-                holderProfile.getCount().setText(COUNT_OF_POSTS.concat(user.getNumberOfPosts().toString()));
-                holderProfile.getRegistrationDate().setText(TIME_OF_REGISTRATION.concat(fomratter.format(user.getDate())));
-                break;
+                    holderProfile.getName().setText(user.getUsername());
+                    holderProfile.getCount().setText(COUNT_OF_POSTS.concat(user.getNumberOfPosts().toString()));
+                    holderProfile.getRegistrationDate().setText(TIME_OF_REGISTRATION.concat(fomratter.format(user.getDate())));
+                    break;
 
-            }
-            case 1: {
-                Post post = (Post) mDataSet.get(position);
-                ViewHolderItem item = (ViewHolderItem) viewHolder;
-                item.getName().setText(post.getUsername());
-                item.getDate().setText(fomratter.format(post.getDate()));
+                }
+                case 1: {
+                    Post post = (Post)data.get(position);
+                    ViewHolderItem item = (ViewHolderItem) viewHolder;
+                    item.getName().setText(post.getUsername());
+                    item.getDate().setText(fomratter.format(post.getDate()));
 
-                Picasso.get()
-                       .load(post.getUrl())
-                       .placeholder(R.drawable.ic_launcher_background)
-                       .error(R.drawable.ic_error_black_24dp)
-                       // To fit image into imageView
-                       .fit()
-                       // To prevent fade animation
-                       .noFade()
-                       .into(item.getImageView());
+                    if("image".equals(post.getType())){
+                        ((ViewHolderItem) viewHolder).getImageView().setVisibility(View.VISIBLE);
+                        ((ViewHolderItem) viewHolder).getPlayerView().setVisibility(View.GONE);
+                        Picasso.get()
+                                .load(post.getUrl())
+                                .placeholder(R.drawable.ic_launcher_background)
+                                .error(R.drawable.ic_error_black_24dp)
+                                // To fit image into imageView
+                                .fit()
+                                // To prevent fade animation
+                                .noFade()
+                                .into(item.getImageView());
+                    } else {
+                        ((ViewHolderItem) viewHolder).getImageView().setVisibility(View.GONE);
+                        ((ViewHolderItem) viewHolder).getPlayerView().setVisibility(View.VISIBLE);
+
+                        item.getPlayerView().setPlayer(exoPlayer);
+                        DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(context,
+                                Util.getUserAgent(context, "social-mobv"));
+                        MediaSource videoSource = new ExtractorMediaSource.Factory(dataSourceFactory)
+                                .createMediaSource(Uri.parse(post.getUrl()));
+                        exoPlayer.prepare(videoSource);
+                        exoPlayer.setRepeatMode(Player.REPEAT_MODE_ONE);
+                        exoPlayer.setPlayWhenReady(true);
+
+                    }
+
             }
         }
     }
@@ -92,6 +128,10 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return mDataSet.size();
+        return data.size();
+    }
+
+    public void setData(List<Object> data){
+        this.data = data;
     }
 }

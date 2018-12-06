@@ -250,13 +250,6 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void onSuccess(Void avoid) {
                                         Log.d(TAG, "DocumentSnapshot successfully written!");
-
-                                        fragment.newPost(new Post(
-                                                            (String) post.get("userid"),
-                                                            (String) post.get("username"),
-                                                            (String) post.get("type"),
-                                                            (String) post.get("url"),
-                                                            (Date) post.get("date")));
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {

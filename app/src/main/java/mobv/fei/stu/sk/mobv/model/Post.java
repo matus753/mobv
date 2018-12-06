@@ -2,7 +2,7 @@ package mobv.fei.stu.sk.mobv.model;
 
 import java.util.Date;
 
-public class Post {
+public class Post extends Model{
 
     private String userid;
 
@@ -13,17 +13,6 @@ public class Post {
     private String url;
 
     private Date date;
-
-    public Post() {
-    }
-
-    public Post(String userid, String username, String type, String url, Date date) {
-        this.userid = userid;
-        this.username = username;
-        this.type = type;
-        this.url = url;
-        this.date = date;
-    }
 
     public String getUserid() {
         return userid;
@@ -63,5 +52,16 @@ public class Post {
 
     public void setDate(Date date) {
         this.date = date;
+    }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "userid='" + userid + '\'' +
+                ", username='" + username + '\'' +
+                ", type='" + type + '\'' +
+                ", url='" + url + '\'' +
+                ", date=" + date +
+                '}';
     }
 }

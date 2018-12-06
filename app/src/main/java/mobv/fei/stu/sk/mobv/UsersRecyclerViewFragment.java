@@ -13,6 +13,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -21,6 +25,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -37,14 +42,15 @@ public class UsersRecyclerViewFragment extends Fragment {
     protected RecyclerView mRecyclerView;
     protected UsersAdapter mAdapter;
     protected RecyclerView.LayoutManager mLayoutManager;
-    protected List<User> users = new ArrayList<>();
-    protected int currentUserPosition = 0;
+    protected List<Post> posts = new ArrayList<>();
 
     private FirebaseFirestore db;
+    private SimpleExoPlayer player;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        this.player = ExoPlayerFactory.newSimpleInstance(this.getContext(), new DefaultTrackSelector());
         super.onCreate(savedInstanceState);
 
         // Initialize dataset, this data would usually come from a local content provider or
@@ -79,63 +85,31 @@ public class UsersRecyclerViewFragment extends Fragment {
         final FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if(currentUser != null) {
-            db.collection("users").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            db.collection("posts").orderBy("date", Query.Direction.DESCENDING).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                 @Override
                 public void onSuccess(QuerySnapshot documentSnapshots) {
                     if (documentSnapshots.isEmpty()) {
                         Log.d(TAG, "onSuccess: LIST EMPTY");
                     } else {
-                        int position = 0;
-                        for (DocumentSnapshot document: documentSnapshots.getDocuments()){
-                            User user = document.toObject(User.class);
-                            if(user != null) {
-                                if(currentUser.getUid().equals(document.getId())){
-                                    currentUserPosition = position;
-                                }
-                                user.setId(document.getId());
-                                users.add(user);
-                            }
-                            position++;
+                        for (DocumentSnapshot document : documentSnapshots.getDocuments()) {
+                            Post p = document.toObject(Post.class).withId(document.getId());
+                            posts.add(p);
                         }
 
                         mRecyclerView = rootView.findViewById(R.id.users_recycler_view);
+                        mAdapter = new UsersAdapter(posts, getActivity(), player);
 
-                        mAdapter = new UsersAdapter(users, getActivity());
-                        // Set PostsAdapter as the adapter for RecyclerView.
+                        for(Post p: posts) System.out.println(p.toString());
+
                         mRecyclerView.setAdapter(mAdapter);
-
-                        // LinearLayoutManager is used here, this will layout the elements in a similar fashion
-                        // to the way ListView would layout elements. The RecyclerView.LayoutManager defines how
-                        // elements are laid out.
                         mLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false);
                         mRecyclerView.setLayoutManager(mLayoutManager);
-
                         PagerSnapHelper snapHelper = new PagerSnapHelper();
                         snapHelper.attachToRecyclerView(mRecyclerView);
-
-                        mRecyclerView.addOnChildAttachStateChangeListener(new RecyclerView.OnChildAttachStateChangeListener() {
-                            @Override
-                            public void onChildViewAttachedToWindow(View view) {
-                                RecyclerView recyclerView = view.findViewById(R.id.posts_recycler_view);
-                                recyclerView.scrollToPosition(1);
-                            }
-
-                            @Override
-                            public void onChildViewDetachedFromWindow(View view) {
-
-                            }
-                        });
-
-                        mLayoutManager.scrollToPosition(currentUserPosition);
-                        }
                     }
-                });
-
+                }
+            });
         }
     }
 
-    public void newPost(Post post){
-        users.get(currentUserPosition).getPosts().add(1, post);
-        mAdapter.notifyItemChanged(currentUserPosition);
-    }
 }
