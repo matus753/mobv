@@ -39,17 +39,19 @@ public class UsersAdapter extends RecyclerView.Adapter<ViewHolderUser> {
     private RecyclerView mRecyclerView;
     private PostsAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
+    private SimpleExoPlayer exoPlayer;
 
     private final FragmentActivity activity;
     private FirebaseFirestore db;
+    private boolean done;
 
     /**
      * Initialize the dataset of the Adapter.
      */
     public UsersAdapter(List<Post> dataSet, FragmentActivity activity, SimpleExoPlayer exoPlayer) {
-        mAdapter = new PostsAdapter(exoPlayer, activity);
         posts = dataSet;
         this.activity = activity;
+        this.exoPlayer = exoPlayer;
 
         db = FirebaseFirestore.getInstance();
         FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
@@ -66,12 +68,10 @@ public class UsersAdapter extends RecyclerView.Adapter<ViewHolderUser> {
 
     @Override
     public void onBindViewHolder(@NonNull final ViewHolderUser viewHolder, final int position) {
-        if(viewHolder.getCreating()) {
-            mRecyclerView = viewHolder.getRecyclerView();
-            mRecyclerView.setAdapter(mAdapter);
-            mLayoutManager = new LinearLayoutManager(activity);
-            mRecyclerView.setLayoutManager(mLayoutManager);
+        final Post post = posts.get(position);
+        mRecyclerView = viewHolder.getRecyclerView();
 
+        if(viewHolder.getCreating()) {
             try {
                 PagerSnapHelper snapHelper = new PagerSnapHelper();
                 snapHelper.attachToRecyclerView(mRecyclerView);
@@ -82,7 +82,7 @@ public class UsersAdapter extends RecyclerView.Adapter<ViewHolderUser> {
             viewHolder.setCreating(false);
         }
 
-        final Post post = posts.get(position);
+
         db.collection("users").document(post.getUserid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
              @Override
              public void onSuccess(final DocumentSnapshot documentSnapshot) {
@@ -108,8 +108,13 @@ public class UsersAdapter extends RecyclerView.Adapter<ViewHolderUser> {
                                         }
                                     }
                                 }
-                                mAdapter.setData(adapterData);
-                                mAdapter.notifyDataSetChanged();
+
+
+                                mAdapter = new PostsAdapter(adapterData, exoPlayer, activity);
+                                mRecyclerView.setAdapter(mAdapter);
+                                mLayoutManager = new LinearLayoutManager(activity);
+                                mRecyclerView.setLayoutManager(mLayoutManager);
+
                                 mRecyclerView.scrollToPosition(scrollTo + 1);
                             }
                         }
