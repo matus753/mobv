@@ -99,8 +99,6 @@ public class UsersRecyclerViewFragment extends Fragment {
                         mRecyclerView = rootView.findViewById(R.id.users_recycler_view);
                         mAdapter = new UsersAdapter(posts, getActivity(), player);
 
-                        for(Post p: posts) System.out.println(p.toString());
-
                         mRecyclerView.setAdapter(mAdapter);
                         mLayoutManager = new LinearLayoutManager(getActivity(), LinearLayoutManager.HORIZONTAL, false);
                         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -110,6 +108,11 @@ public class UsersRecyclerViewFragment extends Fragment {
                 }
             });
         }
+    }
+
+    public void addNewPost(Post post){
+        posts.add(0, post);
+        mAdapter.notifyDataSetChanged();
     }
 
 }

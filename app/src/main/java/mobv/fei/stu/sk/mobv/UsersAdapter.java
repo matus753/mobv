@@ -13,6 +13,7 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreSettings;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 
 import mobv.fei.stu.sk.mobv.model.Post;
 import mobv.fei.stu.sk.mobv.model.User;
@@ -69,19 +72,6 @@ public class UsersAdapter extends RecyclerView.Adapter<ViewHolderUser> {
     @Override
     public void onBindViewHolder(@NonNull final ViewHolderUser viewHolder, final int position) {
         final Post post = posts.get(position);
-        mRecyclerView = viewHolder.getRecyclerView();
-
-        if(viewHolder.getCreating()) {
-            try {
-                PagerSnapHelper snapHelper = new PagerSnapHelper();
-                snapHelper.attachToRecyclerView(mRecyclerView);
-            } catch (IllegalStateException e){
-                e.printStackTrace();
-            }
-        }else {
-            viewHolder.setCreating(false);
-        }
-
 
         db.collection("users").document(post.getUserid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
              @Override
@@ -109,11 +99,17 @@ public class UsersAdapter extends RecyclerView.Adapter<ViewHolderUser> {
                                     }
                                 }
 
-
+                                mRecyclerView = viewHolder.getRecyclerView();
                                 mAdapter = new PostsAdapter(adapterData, exoPlayer, activity);
                                 mRecyclerView.setAdapter(mAdapter);
+
                                 mLayoutManager = new LinearLayoutManager(activity);
                                 mRecyclerView.setLayoutManager(mLayoutManager);
+
+                                if(mRecyclerView.getOnFlingListener() != null){
+                                    PagerSnapHelper snapHelper = new PagerSnapHelper();
+                                    snapHelper.attachToRecyclerView(mRecyclerView);
+                                }
 
                                 mRecyclerView.scrollToPosition(scrollTo + 1);
                             }
