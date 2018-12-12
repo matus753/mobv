@@ -48,6 +48,7 @@ import java.util.Map;
 
 import cz.msebera.android.httpclient.Header;
 import mobv.fei.stu.sk.mobv.model.Post;
+import mobv.fei.stu.sk.mobv.model.User;
 import mobv.fei.stu.sk.mobv.rest.HttpUtils;
 import mobv.fei.stu.sk.mobv.rest.UploadResponse;
 
@@ -260,6 +261,13 @@ public class MainActivity extends AppCompatActivity {
                                         Log.w(TAG, "Error adding document", e);
                                     }
                                 });
+                        db.collection("users").document(currentUser.getUid()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                User user = documentSnapshot.toObject(User.class);
+                                db.collection("users").document(currentUser.getUid()).update("numberOfPosts", user.getNumberOfPosts() + 1);
+                            }
+                        });
                     }
                 }
             }
