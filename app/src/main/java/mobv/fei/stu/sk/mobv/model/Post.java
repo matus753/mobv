@@ -14,6 +14,17 @@ public class Post extends Model{
 
     private Date date;
 
+    public Post() {
+    }
+
+    public Post(String userid, String username, String type, String url, Date date) {
+        this.userid = userid;
+        this.username = username;
+        this.type = type;
+        this.url = url;
+        this.date = date;
+    }
+
     public String getUserid() {
         return userid;
     }

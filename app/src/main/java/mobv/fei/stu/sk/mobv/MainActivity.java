@@ -197,14 +197,15 @@ public class MainActivity extends AppCompatActivity {
                     cursor.close();
 
                     if(selectedMediaUri.getPath() != null) {
+                        String path = selectedMediaUri.getPath().split(":")[1];
                         if (mimeType.startsWith("image")) {
                             //It's an image
                             Log.i(TAG, "Image path:" + selectedMediaUri.getPath());
-                            uploadFile(selectedMediaUri.getPath().replace("/document/raw:", ""), "image");
+                            uploadFile(path, "image");
                         } else if (mimeType.startsWith("video")) {
                             //It's a video
                             Log.i(TAG, "Video path:" + selectedMediaUri.getPath());
-                            uploadFile(selectedMediaUri.getPath().replace("/document/raw:", ""), "video");
+                            uploadFile(path, "video");
                         }
                     }
                 }
@@ -250,6 +251,12 @@ public class MainActivity extends AppCompatActivity {
                                     @Override
                                     public void onSuccess(Void avoid) {
                                         Log.d(TAG, "DocumentSnapshot successfully written!");
+                                        fragment.addNewPost(new Post(
+                                                (String) post.get("userid"),
+                                                (String) post.get("username"),
+                                                (String) post.get("type"),
+                                                (String) post.get("url"),
+                                                (Date) post.get("date")));
                                     }
                                 })
                                 .addOnFailureListener(new OnFailureListener() {
