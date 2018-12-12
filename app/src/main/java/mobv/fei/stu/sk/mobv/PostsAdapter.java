@@ -108,7 +108,7 @@ public class PostsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             item.getPlayerView().setVisibility(View.GONE);
             Picasso.get()
                     .load(post.getUrl())
-                    .placeholder(R.drawable.ic_launcher_background)
+                    .placeholder(R.drawable.progress_animation )
                     .error(R.drawable.ic_error_black_24dp)
                     // To fit image into imageView
                     .fit()
