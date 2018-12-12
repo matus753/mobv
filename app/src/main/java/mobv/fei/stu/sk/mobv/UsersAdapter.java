@@ -106,9 +106,11 @@ public class UsersAdapter extends RecyclerView.Adapter<ViewHolderUser> {
                                 mLayoutManager = new LinearLayoutManager(activity);
                                 mRecyclerView.setLayoutManager(mLayoutManager);
 
-                                if(mRecyclerView.getOnFlingListener() != null){
+                                try {
                                     PagerSnapHelper snapHelper = new PagerSnapHelper();
                                     snapHelper.attachToRecyclerView(mRecyclerView);
+                                } catch (IllegalStateException e){
+                                    e.printStackTrace();
                                 }
 
                                 mRecyclerView.scrollToPosition(scrollTo + 1);
