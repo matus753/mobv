@@ -50,6 +50,7 @@ import cz.msebera.android.httpclient.Header;
 import mobv.fei.stu.sk.mobv.model.Post;
 import mobv.fei.stu.sk.mobv.model.User;
 import mobv.fei.stu.sk.mobv.rest.HttpUtils;
+import mobv.fei.stu.sk.mobv.rest.RealPathUtil;
 import mobv.fei.stu.sk.mobv.rest.UploadResponse;
 
 public class MainActivity extends AppCompatActivity {
@@ -193,7 +194,7 @@ public class MainActivity extends AppCompatActivity {
                     cursor.close();
 
                     if(selectedMediaUri.getPath() != null) {
-                        String path = selectedMediaUri.getPath().split(":")[1];
+                        String path = RealPathUtil.getRealPath(this, selectedMediaUri);
                         if (mimeType.startsWith("image")) {
                             //It's an image
                             Log.i(TAG, "Image path:" + selectedMediaUri.getPath());
